@@ -1,0 +1,55 @@
+//TO SYNC MASTER GL TO INDIV SERVICE BUDGET SHEET
+//CREATE PRIMARY DROPDOWN LIST
+function createPrimaryDrpdwon() {
+  /* SET FOLLOWING VARIABLES FOR THE GL */
+  
+  var dataSS           = "Data Entry";      //Name of the sheet that contain data for dropdown lists
+  var dropSS           = "GL";      //Name of the sheet which dropdown list to be created
+  var primaryDataRange = "A2:A14";       //Data range for primary dropdown
+  var primaryDropRange = "B4:B1000";       //Range which primary dropdown set
+ 
+  var primaryDropList  = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(dataSS).getRange(primaryDataRange).getValues();
+  var primaryDropRange = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(dropSS).getRange(primaryDropRange);
+  var validationRule   = SpreadsheetApp.newDataValidation().requireValueInList(primaryDropList).build();
+  
+  primaryDropRange.setDataValidation(validationRule);
+}
+
+//CREATE SECONDARY DROPDOWN LIST
+function onEdit(){
+  /* SET FOLLOWING VARIABLES */
+  var dataSS       = "Data Entry";         
+  var dropSS       = "GL";      
+  var allDataRange = "A2:B14";      
+  var primaryDDCol = 2;             
+  
+  var dropSS_      = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(dropSS);
+  var dropDData    = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(dataSS).getRange(allDataRange).getValues();
+  var activeCell   = dropSS_.getActiveCell();
+  var activeColumn = activeCell.getColumn();
+  var activeRow    = activeCell.getRow();
+  
+  if(activeColumn==primaryDDCol){
+    var dep_Col         = primaryDDCol+1;
+    var dep_Row         = activeRow;
+    var depCell         = dropSS_.getRange(dep_Row, dep_Col);
+    var primarySelected = activeCell.getValue();
+    var validationRule  = SpreadsheetApp.newDataValidation().requireValueInList(getDependentList(dropDData,primarySelected)).build();
+
+    depCell.setDataValidation(validationRule);
+  }
+}
+ 
+function getDependentList(dropDData,primarySelected){
+  var dependenList = [];
+  var j = 0;
+  if(dropDData != null){
+    for(i=0; i<dropDData.length; i++){
+      if(dropDData[i][0]==primarySelected){
+        dependenList[j] = dropDData[i][1];
+        j++;
+      }
+    }
+  }
+  return dependenList;
+}
